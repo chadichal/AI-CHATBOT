@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ziya AI Assistant - Complete Knowledge Base</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #000000;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2a2a;
+            background: #000000;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #ffffff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .icon-btn:hover {
+            background: #2a2a2a;
+            transform: translateY(-1px);
+        }
+
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-text {
+            line-height: 1.5;
+            font-size: 0.9375rem;
+        }
+
+        .message-text pre {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 8px 0;
+            font-size: 0.8125rem;
+        }
+
+        .footer {
+            border-top: 1px solid #2a2a2a;
+            padding: 16px 24px;
+            background: #000000;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: flex-end;
+            gap: 12px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 8px 12px;
+        }
+
+        .mic-btn {
+            background: none;
+            border: none;
+            color: #888888;
+            font-size: 1.25rem;
+            cursor: pointer;
+            padding: 8px;
+            transition: color 0.2s;
+        }
+
+        .mic-btn.recording {
+            color: #f87171;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .mic-btn:hover {
+            color: #ffffff;
+        }
+
+        textarea {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            resize: none;
+            outline: none;
+            padding: 8px 0;
+            max-height: 200px;
+        }
+
+        textarea::placeholder {
+            color: #555555;
+        }
+
+        .send-btn {
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .send-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: #666;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">Ziya AI Assistant</div>
+        <div class="header-actions">
+            <button class="icon-btn" id="newChatBtn">New Chat</button>
+            <button class="icon-btn" id="shareBtn">Share</button>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chatContainer"></div>
+
+    <div class="footer">
+        <div class="input-container">
+            <button class="mic-btn" id="micBtn">🎤</button>
+            <textarea id="userInput" placeholder="Message Ziya..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn">Send</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== COMPREHENSIVE KNOWLEDGE DATABASE ====================
+        const knowledgeDB = {
+            // Greetings & General Conversation
+            greetings: {
+                patterns: ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "hi there"],
+                response: "Hello! I'm Ziya, How can I help?"
+            },
+            howAreYou: {
+                patterns: ["how are you", "how's it going", "how are things", "how do you do"],
+                response: "I'm doing well, thank you for asking! I'm here and ready to help with any questions, projects, interview preparation, learning topics, or anything else you'd like to discuss. How are you doing today?"
+            },
+            hai: {
+                patterns: ["hai", "hey", "hello there"],
+                response: "Nice to see you. How can I help you today? Whether it's AI/ML learning, interview preparation, Python programming, Web development, resume building, career guidance, or general questions, just ask, and I'll do my best to help."
+            },
+            goodMorning: {
+                patterns: ["good morning", "good afternoon", "good night"],
+                response: "Good morning! Hope you're having a great start to your day. What would you like to work on today? Whether it's AI/ML, coding, interview preparation, career guidance, or any other topic, I'm here to help. Have a productive and successful day!"
+            },
+            whatDoing: {
+                patterns: ["what are you doing", "what are u doing", "what's up"],
+                response: "Right now, I'm waiting to help you. I can answer questions, explain concepts, help with coding, prepare you for interviews, assist with resumes, or just chat. What are you doing today? Any plans for learning, work, or job preparation?"
+            },
+            howThings: {
+                patterns: ["how are the things", "how is everything", "how's everything"],
+                response: "Things are going smoothly on my end! I'm here, ready to answer questions, help with projects, explain concepts, or chat about whatever interests you. How are things with you? How's your day going so far?"
+            },
+            name: {
+                patterns: ["what is your name", "who are you", "what should i call you", "your name"],
+                response: "I'm Ziya, your AI assistant! I'm here to help you with any questions you have."
+            },
+            help: {
+                patterns: ["help", "can you help", "i need help", "assist me"],
+                response: "I'd be happy to help! Ask me about AI, ML, Generative AI, Python, Deep Learning, Web Dev, HTML, CSS, JS, Jobs, Courses, etc."
+            },
+            goodbye: {
+                patterns: ["bye", "goodbye", "see you", "exit", "quit", "thanks bye"],
+                response: "Goodbye! Have a wonderful day! Feel free to come back if you need any help."
+            },
+            thanks: {
+                patterns: ["thank", "thanks", "appreciate", "grateful"],
+                response: "You're very welcome! I'm glad I could help. Is there anything else you'd like to know?"
+            },
+            
+            // ==================== AI KNOWLEDGE (Detailed) ====================
+            aiDefinition: { patterns: ["what is ai", "what is artificial intelligence", "define ai", "ai definition", "tell me about ai", "artificial intelligence"], response: "**Artificial Intelligence (AI) - Definition**\n\nArtificial Intelligence (AI) is a branch of computer science that focuses on creating machines and software systems that can perform tasks that normally require human intelligence. These tasks include learning from experience, understanding language, recognizing images and speech, solving problems, making decisions, and adapting to new situations.In simple terms, AI enables computers to think, learn, and act in ways that resemble human intelligence. Instead of following only fixed instructions, AI systems can analyze data, identify patterns, and improve their performance over time. Today, AI is one of the most transformative technologies in the world. It is used in healthcare, education, transportation, finance, agriculture, entertainment, cybersecurity, and many other industries. AI powers virtual assistants, recommendation systems, self-driving vehicles, chatbots, fraud detection systems, and advanced robotics" },
+            aiFounder: { patterns: ["ai founder", "founder of ai", "who invented ai","who is founder of Artificial Intelligence","who developed Artificial Intelligence"], response: "**AI Founder & History**\n\n1. 1956–1974: Early AI Research Focused on Problem-Solving and Symbolic Methods - The birth of AI as a formal field began in 1956 at the Dartmouth Conference. Researchers believed that machines could be programmed to mimic human reasoning and intelligence. Early AI systems relied on symbolic methods, where knowledge was represented using rules, logic, and symbols. Programs such as the Logic Theorist and General Problem Solver demonstrated that computers could solve mathematical and logical problems. Governments and universities heavily funded AI research due to high expectations. Scientists predicted that human-level intelligence might be achieved within a few decades. However, limitations in computing power, memory, and available data eventually slowed progress and revealed significant challenges.\n2. 1980s: Expert Systems Became Popular - During the 1980s, AI entered a new phase with the rise of expert systems. These systems were designed to imitate the decision-making abilities of human experts in specific domains such as medicine, engineering, and finance. Expert systems used large knowledge bases and rule-based inference engines to solve problems and provide recommendations. One famous example was MYCIN, which assisted in diagnosing bacterial infections. Businesses adopted expert systems to automate tasks and improve efficiency. The commercial success of expert systems attracted significant investment in AI technologies. However, maintaining and updating large rule sets proved difficult, leading to limitations in scalability.\n3. Early AI (1956-1974): Problem-solving and symbolic methods.\n4. 1997: IBM Deep Blue Defeated Garry Kasparov - In 1997, a major milestone in AI history occurred when IBM's Deep Blue defeated world chess champion Garry Kasparov in a six-game match. Deep Blue used powerful hardware, advanced search algorithms, and evaluation functions to analyze millions of possible chess positions every second. The victory demonstrated that computers could outperform humans in highly structured intellectual tasks. It attracted global attention and showcased the potential of AI for solving complex problems. Although Deep Blue was not capable of learning or general reasoning, its success proved that specialized AI systems could achieve superhuman performance in specific domains.\n5.2020s: Generative AI Revolution with GPT, DALL·E, and Multimodal Models - The 2020s marked the rise of Generative AI, transforming how people interact with technology. Large Language Models (LLMs) became capable of generating human-like text, answering questions, writing code, and assisting with research. Systems such as GPT and DALL·E demonstrated the ability to create text and images from simple prompts. Multimodal models expanded capabilities by understanding and generating content across text, images, audio, and video. These advancements accelerated innovation in education, healthcare, software development, content creation, and business automation, making AI accessible to millions of users worldwide.\n " },
+            aiAlgorithms: { patterns: ["ai algorithms", "algorithms in ai", "Algorithms of artificial Intelligence" ], response: "**Key AI Algorithms**\n\n1. Linear/Logistic Regression - Linear Regression is a supervised machine learning algorithm used to predict a continuous numerical value by finding the relationship between input variables and output variables.\n2. Decision Trees & Random Forest - Random Forest is an ensemble learning algorithm that combines multiple decision trees and takes the majority vote or average prediction.\n3. Support Vector Machines (SVM) - Support Vector Machine (SVM) is a supervised machine learning algorithm used for classification and regression by finding the optimal boundary (hyperplane) between classes.\n4. K-Nearest Neighbors (KNN) - K-Nearest Neighbors (KNN) is a supervised learning algorithm that classifies a data point based on the majority class of its nearest neighbors.\n5. K-Means Clustering - K-Means Clustering is an unsupervised learning algorithm that groups similar data points into K clusters.\n6. Neural Networks (ANN, CNN, RNN) - An ANN is a deep learning model inspired by the human brain that learns patterns from data using interconnected neurons.\n7. Reinforcement Learning (Q-Learning, DQN) - An RNN is a neural network designed for sequential data where previous inputs influence future outputs.\n8. Transformer Models (Attention mechanism) - Reinforcement Learning (RL) is a learning technique where an agent learns by interacting with an environment and receiving rewards or penalties." },
+            aiAdvantages: { patterns: ["what is advantages of ai", "advantages of artificial intelligence", "benefits of ai"], response: "**Advantages of AI**\n\n1. Reduces Human Errors - AI systems can perform tasks with high accuracy and consistency, minimizing mistakes caused by fatigue or oversight.\n2. Automates Repetitive Tasks - AI can handle routine and repetitive work, allowing people to focus on more complex and creative activities.\n3. 24/7 Availability - Unlike humans, AI systems can operate continuously without breaks, holidays, or sleep.\n4. Faster Decision-Making - AI can analyze large volumes of data quickly and provide insights or recommendations in real time.\n5. Improves Productivity - By automating processes and optimizing workflows, AI helps organizations achieve higher efficiency and output.\n6. Handles Large Amounts of Data - AI can process and analyze massive datasets that would be difficult or impossible for humans to manage manually.\n7. Enhances Customer Experience - AI-powered chatbots, virtual assistants, and recommendation systems provide personalized support and services.\n8. Supports Better Healthcare - AI assists in disease diagnosis, medical image analysis, drug discovery, and personalized treatment planning.\n9. Performs Dangerous Tasks - AI-powered robots can work in hazardous environments such as mines, disaster zones, and space exploration missions.\n10. Drives Innovation - AI enables the development of advanced technologies, including self-driving vehicles, smart assistants, predictive analytics, and Generative AI applications." },
+            aiDisadvantages: { patterns: ["disadvantages of ai", "what is disadvantages of ai", "drawbacks of ai"], response: "**Disadvantages of AI**\n\n1. Job Displacement - AI can automate many routine and repetitive tasks, which may reduce demand for certain jobs and require workers to learn new skills.\n2. High Development Cost - Building, training, and maintaining AI systems often requires significant investment in computing resources, data, and specialized talent.\n3. Lack of Human Creativity and Emotion - AI can process information efficiently, but it does not possess genuine emotions, empathy, intuition, or human creativity.\n4. Bias and Unfair Decisions - If training data contains biases, AI systems may produce unfair or discriminatory outcomes.\n5. Privacy Concerns - AI often relies on large amounts of personal and behavioral data, raising concerns about surveillance, data misuse, and loss of privacy.\n6. Security Risks - AI systems can be vulnerable to hacking, manipulation, adversarial attacks, or malicious use.\n7. Dependence on Technology - Excessive reliance on AI may reduce human involvement, critical thinking, and practical skills in certain areas.\n8. Limited Common Sense - AI can perform well on specific tasks but may struggle with broader understanding, context, and common-sense reasoning.\n9. Energy and Resource Consumption - Training large AI models can consume substantial electricity and computing resources, contributing to environmental and operational costs.\n10. Ethical and Legal Challenges - AI raises questions about accountability, transparency, intellectual property, safety, and responsible use." },
+            aiModels: { patterns: ["ai models", "types of ai models"], response: "**Popular AI Models**\n\n1. GPT-4 (OpenAI) - GPT-4 is a Large Language Model (LLM) developed by OpenAI. It can understand and generate human-like text and can also work with multiple types of inputs.\n2. Gemini (Google) - Google Gemini is Google's multimodal AI model capable of understanding text, images, audio, video, and code.\n3. Claude (Anthropic) - Claude is a Large Language Model developed by Anthropic using a technique called Constitutional AI, which focuses on helpful, harmless, and honest responses.\n4. Llama (Meta) - Llama is a family of open-weight Large Language Models developed by Meta for research and AI application development.\n5. DALL-E - DALL-E is an AI model developed by OpenAI that generates images from text descriptions.\n6. Whisper - Whisper is an AI model developed by OpenAI for converting spoken language into text.\n7. BERT - BERT (Bidirectional Encoder Representations from Transformers) is a language model developed by Google for understanding the context and meaning of words in a sentence.\n8. SAM - Segment Anything Model (SAM) is a computer vision model developed by Meta that can identify and segment objects in images." },
+            
+            aiFeatures: { patterns: ["ai features", "key features of ai"], response: "**Key Features of AI**\n\n1. Learning Capability - AI can learn from data and improve its performance over time without being explicitly programmed for every task. \n2. Pattern recognition - AI systems can learn from data, experiences, and past interactions without being explicitly programmed for every task.\n Example \n 1. Recommendation systems learning user preferences.\n 2. Spam email detection improving over time.\n 3. Reasoning and decision-making - Reasoning is the process of using facts, knowledge, and rules to reach a conclusion or solve a problem.\n4. Natural Language Processing (NLP) - Humans communicate using language, but computers understand data and numbers. NLP helps computers understand human language and respond meaningfully.\n5. Computer Vision - Computer vision enables computers and machines to see, understand, analyze, and interpret visual information from images, videos, and real-world environments.\n6. Speech recognition - Speech recognition enables computers and machines to listen to, understand, and convert human speech into text or commands.\n7. Automation and adaptability - Automation and adaptability enables machines and software systems to perform tasks automatically with minimal or no human intervention\n8. Prediction and forecasting - Prediction and forecasting enables machines to analyze historical data, identify patterns and trends, and estimate future outcomes or events." },
+            aiConcepts: { patterns: ["ai concepts", "core ai concepts"], response: "**Core AI Concepts**\n\n1. Machine Learning - Machine Learning is a subset of AI that enables computers to learn from data and improve performance without being explicitly programmed.\nApplications\n Recommendation systems\n Fraud detection\n Predictive analytics\n2. Deep Learning - Deep Learning is a subset of Machine Learning that uses multi-layered neural networks to learn complex patterns from large datasets.\nApplications\n Image recognition\n Speech recognition\nGenerative AI\n3. Neural Networks - Neural Networks are computing systems inspired by the human brain, consisting of interconnected nodes (neurons) that process information.\n Types\nANN (Artificial Neural Network)\n CNN (Convolutional Neural Network)\n RNN (Recurrent Neural Network)\nApplications\n Pattern recognition\n Classification\n Prediction\n4. Natural Language Processing - NLP enables computers to understand, interpret, and generate human language.\n Applications\n Chatbots\n Language translation\n Sentiment analysis\n5. Computer Vision - Computer Vision enables machines to analyze and understand images and videos.\nApplications\n Face recognition\n Object detection\nMedical imaging\n6. Reinforcement Learning - Reinforcement Learning is a learning method where an agent learns by interacting with an environment and receiving rewards or penalties.\n Applications\n Robotics\n Gaming\n Autonomous vehicles\n7. Generative Models - Generative Models create new content such as text, images, audio, or videos based on learned patterns.\n Applications\n Content creation\n Image generation\n Chatbots\n8. Expert Systems - Expert Systems are AI systems that use predefined rules and knowledge bases to make decisions similar to human experts.\n Applications\nMedical diagnosis\nFinancial planning\n Technical support\n" },
+            aiTesting: { patterns: ["ai testing", "testing ai models"], response: "**AI Testing Methods**\n\n1. Unit Testing - Tests individual AI components or functions independently.\nPurpose\nCheck if each module works correctly.\nDetect bugs early.\nExample\nTesting a data preprocessing function.\nTesting a feature extraction module.\n2. Integration Testing - Integration Testing checks whether multiple AI components work together correctly.\n Purpose\n Validate the complete AI pipeline.\nEnsure smooth data flow.\nExample\nData Collection → Preprocessing → Model → Prediction.\n3. Model Validation - Model Validation evaluates how well a model performs on unseen data.\nCross-Validation\nThe dataset is divided into multiple parts (folds), and the model is trained and tested multiple times.\n4. Performance Metrics - Measures the effectiveness and accuracy of AI models.\n Accuracy\n Percentage of correct predictions.\n Precision\nMeasures how many positive predictions are actually correct.\n Recall\n Measures how many actual positive cases were identified.\n F1-Score\n Balance between Precision and Recall.\n Applications\n Classification models\nFraud detection\n Medical diagnosis\n5. Robustness Testing - Tests how AI behaves under unusual, extreme, or unexpected conditions.\n Examples\nNoisy images.\nIncomplete data.\n Unexpected user inputs.\n6. Bias/Fairness Testing - Evaluates whether the AI system treats different groups fairly and avoids discrimination.\n Purpose\nDetect bias in training data.\nEnsure ethical AI behavior.\nApplications\nHiring systems.\nLoan approval systems.\nRecommendation engines.\n7. Security Testing – Adversarial Attacks - Tests the AI model's resistance to malicious inputs designed to fool it.\nExample\nSlightly modified images causing misclassification.\nBenefits\nImproves security.\nProtects against attacks.\n8. A/B Testing in production - Compares two versions of an AI model in real-world usage.\nPurpose\nMeasure user engagement.\nCompare performance.\nExample\nTesting two recommendation algorithms." },
+            aiTools: { patterns: ["ai tools", "tools for ai"], response: "**AI Tools & Frameworks**\n\n1. TensorFlow - TensorFlow is Google's open-source machine learning and deep learning framework.\nApplications\nNeural Networks\nComputer Vision\nNLP\nGenerative AI\n2. PyTorch - PyTorch is a flexible deep learning framework widely used in research and production.\nApplications\nDeep Learning\nLLMs\nComputer Vision\n3. Keras - Keras is a high-level API built on TensorFlow for easy neural network development.\nApplications\nDeep Learning\nPrototyping AI Models\n4. Scikit-learn - Scikit-learn is a popular Python library for traditional Machine Learning algorithms.\nApplications\nClassification\nRegression\nClustering\n5. Hugging Face - Hugging Face provides Transformer models and NLP tools.\nApplications\nChatbots\nLanguage Models\nText Generation\n6. OpenCV - OpenCV is a computer vision and image processing library.\nApplications\nFace Recognition\nObject Detection\n7. LangChain - LangChain is a framework for building applications powered by Large Language Models (LLMs).\nApplications\nAI Agents\nRAG Systems\nChatbots\n8. Jupyter - Jupyter Notebook is an interactive development environment for AI and Data Science.\nApplications\nExperimentation\nData Analysis\nModel Developmentn\n" },
+            aiFrameworks: { patterns: ["ai frameworks", "ai libraries"], response: "**AI Frameworks & Libraries**\n\n1. TensorFlow / PyTorch - TensorFlow is an open-source AI and Deep Learning framework developed by Google for building and training machine learning models.\nKey Features\nDeep Learning support\nNeural network development\nGPU and TPU acceleration\nModel deployment\n\n Applications\nComputer Vision\nNLP\nGenerative AI\nRecommendation Systems\n2. Scikit-learn - Scikit-learn is a Python library used for traditional machine learning algorithms and data analysis.\nKey Features\nClassification algorithms\nRegression algorithms\nClustering algorithms\nModel evaluation tools\n\nApplications\nPredictive Analytics\n\nData Mining\nCustomer Segmentation\n3. Keras - Keras is a high-level Deep Learning API that simplifies neural network development and runs on top of TensorFlow.\nKey Features\nUser-friendly\nFast prototyping\nEasy model building\n4. Transformers (Hugging Face) - Hugging Face Transformers is a library that provides pre-trained Transformer models for NLP and Generative AI tasks.\nKey Features\nPre-trained AI models\nTransformer architecture\nEasy fine-tuning\nMultilingual support\n\nPopular Models\n1. GPT\n 2. BERT\n3. Llama\nApplications\n1. Chatbots\n2. Translation\n3. Text Summarization\n4. Question Answering\n5. OpenCV - OpenCV is an open-source computer vision library used for image and video processing.\n\nKey Features\n 1. Image processing\n 2. Face detection\n3. Object detection\n 4. Video analysis\nApplications\n1. Facial Recognition\n2. Autonomous Vehicles\n3. Surveillance Systems\n6. NLTK / spaCy (NLP) - Natural Language Toolkit (NLTK) is a Python library for text processing and NLP tasks.\n\nFeatures\n1. Tokenization\n2. Stemmingn\n3. Lemmatization\n4. Sentiment Analysis\n\nApplications\n1. Text Analysis\n2. Chatbots\n3. Language Processing\nPandas / NumPy (Data) - Pandas is a Python library used for data manipulation and analysis.\nPandas is a Python library used for data manipulation and analysis.\n1. DataFrames\n2. Data Cleaning\n3. Data Analysis\n\nApplications\n1. Data Science\n2. Machine Learning\n3. Business Analytics\n8. Matplotlib / Seaborn (Visualization) - Matplotlib is a visualization library used for creating charts and graphs.\n\nFeatures\n1. Line charts\n2. Bar charts\n 3. Pie charts\n 4. Scatter plots\n\nApplications\n1. Data Visualization\n2. Analytics Reporting\nPyTorch - PyTorch is an open-source Deep Learning framework developed by Meta that is widely used in research and production AI systems.\nKey Features\nDynamic computation graphs\nEasy debugging\nGPU support\n Research-friendly\nScikit-learn is a Python library used for traditional machine learning algorithms and data analysis.\nKey Features\n1. Regression algorithms\n2.Clustering algorithms\n3. Model evaluation tools\n\n Applications\n1. Predictive Analytics\n 2. Data Mining\n3. Customer Segmentation\nClassification algorithms\nApplications\nDeep Learning\nNLP\nLLM Development\n" },
+            
+            // ==================== ML KNOWLEDGE ====================
+            mlDefinition: { patterns: ["what is ml", "what is machine learning", "define machine learning", "machine learning definition"], response: "**Machine Learning (ML) - Definition**\n\nMachine Learning is a subset of AI that enables systems to learn from data without explicit programming. It uses algorithms to find patterns, make predictions, and improve over time. Types: Supervised, Unsupervised, Semi-Supervised, Reinforcement Learning." },
+            mlFounder: { patterns: ["ml founder", "founder of machine learning"], response: "**ML Founder & History**\n\n1952: Arthur Samuel created first checkers-learning program.\n1957: Frank Rosenblatt invented Perceptron.\n1967: Nearest Neighbor algorithm.\n1980s: Decision trees (ID3, C4.5).\n1995: Support Vector Machines (SVM), Random Forest.\n2006: Deep learning breakthroughs." },
+            mlAlgorithms: { patterns: ["ml algorithms", "machine learning algorithms"], response: "**Key ML Algorithms**\n\n1. Linear/Logistic Regression - \n2. Decision Trees\n3. Random Forest\n4. SVM (Support Vector Machines)\n5. KNN (K-Nearest Neighbors)\n6. K-Means Clustering\n7. Naive Bayes\n8. XGBoost / LightGBM\n9. Neural Networks\n10. PCA / t-SNE" },
+            mlAdvantages: { patterns: ["ml advantages", "benefits of machine learning"], response: "**Advantages of ML**\n\n1. Automates data analysis\n2. Improves accuracy over time\n3. Handles large datasets\n4. Finds hidden patterns\n5. Personalizes user experiences\n6. Enables predictive analytics\n7. Reduces human error\n8. Scales with data volume" },
+            mlDisadvantages: { patterns: ["ml disadvantages", "drawbacks of ml"], response: "**Disadvantages of ML**\n\n1. Requires large labeled datasets\n2. Risk of overfitting\n3. Computationally intensive\n4. Black box problem\n5. Bias in training data\n6. High maintenance effort\n7. Privacy concerns\n8. Dependence on quality data" },
+            mlModels: { patterns: ["ml models", "types of ml models"], response: "**ML Model Types**\n\n1. Linear Models (Regression, Logistic)\n2. Tree-Based (Decision Trees, Random Forest)\n3. SVM\n4. Bayesian Models (Naive Bayes)\n5. Ensemble Methods (Boosting, Bagging)\n6. Neural Networks\n7. Clustering Models (K-Means, DBSCAN)\n8. Dimensionality Reduction (PCA, t-SNE)" },
+            mlFeatures: { patterns: ["ml features", "key features of ml"], response: "**Key Features of ML**\n\n1. Learning from data\n2. Pattern recognition\n3. Prediction capability\n4. Automation of repetitive tasks\n5. Continuous improvement\n6. Adaptability to new data\n7. Scalability\n8. Support for multiple data types" },
+            mlConcepts: { patterns: ["ml concepts", "core ml concepts"], response: "**Core ML Concepts**\n\n1. Supervised Learning\n2. Unsupervised Learning\n3. Reinforcement Learning\n4. Feature Engineering\n5. Overfitting / Underfitting\n6. Cross-Validation\n7. Bias-Variance Tradeoff\n8. Hyperparameter Tuning" },
+            mlTesting: { patterns: ["ml testing", "testing ml models"], response: "**ML Testing Methods**\n\n1. Train-Test Split\n2. Cross-Validation (k-fold)\n3. Metrics: Accuracy, Precision, Recall, F1, AUC-ROC\n4. Regression Metrics: MAE, MSE, RMSE, R²\n5. Overfitting detection\n6. A/B Testing\n7. Model Drift Monitoring\n8. Bias/Fairness Evaluation" },
+            mlTools: { patterns: ["ml tools", "tools for ml"], response: "**ML Tools & Libraries**\n\n1. Scikit-learn\n2. TensorFlow\n3. PyTorch\n4. XGBoost\n5. Pandas/NumPy\n6. Matplotlib/Seaborn\n7. MLflow\n8. Jupyter" },
+            mlFrameworks: { patterns: ["ml frameworks", "ml libraries"], response: "**ML Frameworks**\n\n1. Scikit-learn\n2. TensorFlow / PyTorch\n3. XGBoost / LightGBM\n4. Keras\n5. Dask / Spark MLlib\n6. Hugging Face\n7. Weights & Biases\n8. Kubeflow" },
+            
+            // ==================== GENERATIVE AI ====================
+            genAiDefinition: { patterns: ["what is generative ai", "gen ai definition", "generative ai"], response: "**Generative AI (Gen AI) - Definition**\n\nGenerative AI creates new content (text, images, audio, video, code) by learning patterns from existing data. Uses LLMs, GANs, VAEs, diffusion models. Examples: ChatGPT (text), DALL-E (images), Sora (video)." },
+            genAiFounder: { patterns: ["gen ai founder", "founder of generative ai"], response: "**Generative AI Contributors**\n\nNo single founder. Key contributors: Ian Goodfellow (GANs, 2014), Transformer architecture (Vaswani et al., 2017), OpenAI (GPT series), Google (Diffusion models, Gemini)." },
+            genAiAlgorithms: { patterns: ["gen ai algorithms", "generative ai algorithms"], response: "**Generative AI Algorithms**\n\n1. GANs (Generative Adversarial Networks)\n2. VAEs (Variational Autoencoders)\n3. Diffusion Models\n4. Transformer-based LLMs\n5. Autoregressive Models\n6. RNN/LSTM for sequence generation\n7. Flow-based models\n8. Hybrid architectures" },
+            genAiAdvantages: { patterns: ["gen ai advantages", "benefits of generative ai"], response: "**Advantages of Generative AI**\n\n1. Automates content creation\n2. Enhances creativity\n3. Personalizes user experiences\n4. Accelerates research\n5. Supports education\n6. Reduces manual effort\n7. Enables realistic simulations\n8. Assists in software development" },
+            genAiDisadvantages: { patterns: ["gen ai disadvantages", "drawbacks of generative ai"], response: "**Disadvantages of Generative AI**\n\n1. Hallucinations (incorrect outputs)\n2. High computational cost\n3. Bias from training data\n4. Copyright/IP concerns\n5. Misuse (deepfakes)\n6. Lack of true understanding\n7. Privacy risks\n8. Job displacement fears" },
+            genAiModels: { patterns: ["gen ai models", "generative ai models"], response: "**Popular Generative AI Models**\n\n1. GPT-4 / GPT-4o (OpenAI)\n2. DALL-E 3 / Midjourney\n3. Gemini (Google)\n4. Claude (Anthropic)\n5. Stable Diffusion\n6. Sora\n7. Llama (Meta)\n8. MusicLM" },
+            genAiFeatures: { patterns: ["gen ai features", "key features of generative ai"], response: "**Key Features of Generative AI**\n\n1. Creates novel content from prompts\n2. Multimodal understanding\n3. Contextual awareness\n4. Few-shot / zero-shot learning\n5. Fine-tuning capability\n6. Integration with RAG\n7. Agentic workflows\n8. Real-time generation" },
+            genAiConcepts: { patterns: ["gen ai concepts", "generative ai concepts"], response: "**Core Gen AI Concepts**\n\n1. LLMs (Large Language Models)\n2. Prompt Engineering\n3. RAG (Retrieval-Augmented Generation)\n4. Fine-tuning vs. Pre-training\n5. Attention Mechanism\n6. Embeddings and Vectors\n7. Temperature / Top-p Sampling\n8. Agents and Tool Use" },
+            genAiTesting: { patterns: ["gen ai testing", "testing generative ai"], response: "**Gen AI Testing Approaches**\n\n1. Output quality (coherence, relevance)\n2. Hallucination detection\n3. Bias and safety evaluation\n4. Prompt robustness testing\n5. Adversarial testing\n6. Performance benchmarks (MMLU, HellaSwag)\n7. Human preference evaluation\n8. Toxicity/content filtering" },
+            genAiTools: { patterns: ["gen ai tools", "generative ai tools"], response: "**Generative AI Tools**\n\n1. LangChain - LLM app framework\n2. LlamaIndex - RAG pipelines\n3. Hugging Face - Models & datasets\n4. OpenAI API / Gemini API\n5. Ollama - Local LLMs\n6. Vector DBs (Chroma, Qdrant)\n7. Gradio / Streamlit - Demos\n8. Weights & Biases - Tracking" },
+            genAiFrameworks: { patterns: ["gen ai frameworks", "generative ai frameworks"], response: "**Gen AI Frameworks**\n\n1. LangChain\n2. LlamaIndex\n3. Hugging Face Transformers\n4. OpenAI / Gemini SDKs\n5. VLLM / TGI\n6. Ray\n7. FastAPI\n8. DSPy" },
+            
+            // ==================== PYTHON ====================
+            pythonDefinition: { patterns: ["what is python", "python programming", "define python"], response: "**Python Programming Language**\n\nPython is a high-level, interpreted, general-purpose language created by Guido van Rossum (1991). Known for readability, dynamic typing, extensive libraries, used in web dev, data science, AI/ML, automation." },
+            pythonFounder: { patterns: ["python founder", "who created python"], response: "**Python Founder**\n\nGuido van Rossum created Python in 1991. He was the BDFL until 2018. Named after Monty Python." },
+            pythonAdvantages: { patterns: ["python advantages", "benefits of python"], response: "**Advantages of Python**\n\n1. Easy to learn and read\n2. Extensive libraries\n3. Cross-platform\n4. Large community\n5. Rapid development\n6. Versatile\n7. Free and open-source\n8. Strong in data science/AI" },
+            pythonDisadvantages: { patterns: ["python disadvantages", "drawbacks of python"], response: "**Disadvantages of Python**\n\n1. Slower than compiled languages\n2. High memory usage\n3. GIL limits threading\n4. Not ideal for mobile\n5. Runtime errors\n6. Weak concurrency\n7. Dependency challenges" },
+            pythonFeatures: { patterns: ["python features", "key features of python"], response: "**Key Python Features**\n\n1. Dynamic typing\n2. Automatic memory management\n3. Comprehensive standard library\n4. Interpreted execution\n5. Object-oriented\n6. Functional programming support\n7. Decorators, generators\n8. Exception handling" },
+            pythonConcepts: { patterns: ["python concepts", "core python concepts"], response: "**Core Python Concepts**\n\n1. Data Types: int, float, str, list, tuple, dict, set\n2. OOP: class, object, inheritance, polymorphism\n3. Functions, lambda\n4. Modules and packages\n5. File I/O\n6. Exception handling\n7. Decorators\n8. List comprehensions" },
+            pythonTesting: { patterns: ["python testing", "testing python"], response: "**Python Testing Tools**\n\n1. unittest\n2. pytest\n3. doctest\n4. nose2\n5. tox\n6. coverage.py\n7. unittest.mock\n8. hypothesis" },
+            pythonTools: { patterns: ["python tools", "python development tools"], response: "**Python Development Tools**\n\n1. IDEs: PyCharm, VS Code, Jupyter\n2. Package managers: pip, conda, poetry\n3. Debugging: pdb, ipdb\n4. Profiling: cProfile\n5. Linting: pylint, flake8, black\n6. Documentation: Sphinx" },
+            
+            // ==================== DEEP LEARNING ====================
+            dlDefinition: { patterns: ["what is deep learning", "deep learning definition"], response: "**Deep Learning - Definition**\n\nDeep Learning is a subset of ML using multi-layered neural networks to learn hierarchical representations from data. Excels in image, speech, text, and video tasks. Requires large data and GPUs/TPUs." },
+            dlFounder: { patterns: ["deep learning founder", "who invented deep learning"], response: "**Deep Learning Contributors**\n\nKey pioneers: Geoffrey Hinton, Yann LeCun (CNNs), Yoshua Bengio. 2006 breakthrough. 2012 AlexNet sparked modern DL revolution." },
+            dlAlgorithms: { patterns: ["deep learning algorithms", "dl algorithms"], response: "**Deep Learning Algorithms**\n\n1. Backpropagation\n2. Gradient Descent (SGD, Adam, RMSprop)\n3. Convolution (CNN)\n4. Recurrent (RNN/LSTM/GRU)\n5. Attention Mechanism\n6. Transformer\n7. GAN\n8. Diffusion" },
+            dlAdvantages: { patterns: ["deep learning advantages", "benefits of deep learning"], response: "**Advantages of Deep Learning**\n\n1. Automatic feature extraction\n2. High accuracy on complex tasks\n3. Handles unstructured data\n4. Scalable with more data\n5. State-of-the-art in vision/NLP\n6. End-to-end learning\n7. Transfer learning\n8. Powers generative AI" },
+            dlDisadvantages: { patterns: ["deep learning disadvantages", "drawbacks of deep learning"], response: "**Disadvantages of Deep Learning**\n\n1. Requires massive labeled datasets\n2. Computationally expensive\n3. Long training times\n4. Black box (hard to interpret)\n5. Overfitting risk\n6. High energy consumption\n7. Difficult hyperparameter tuning\n8. Requires specialized hardware" },
+            dlModels: { patterns: ["deep learning models", "types of dl models"], response: "**Deep Learning Model Types**\n\n1. CNN\n2. RNN / LSTM / GRU\n3. Transformer\n4. Autoencoders / VAEs\n5. GANs\n6. DBN\n7. Siamese Networks\n8. Capsule Networks" },
+            dlFeatures: { patterns: ["deep learning features", "key features of dl"], response: "**Key Deep Learning Features**\n\n1. Hierarchical feature learning\n2. End-to-end training\n3. Non-linear transformations\n4. Transfer learning\n5. Attention mechanisms\n6. Distributed representations\n7. Scalable with more data\n8. Supports multimodal learning" },
+            dlConcepts: { patterns: ["deep learning concepts", "dl core concepts"], response: "**Core Deep Learning Concepts**\n\n1. Neural Networks (input, hidden, output layers)\n2. Activation Functions (ReLU, Sigmoid, Tanh)\n3. Loss Functions\n4. Optimizers (Adam, SGD)\n5. Regularization (Dropout, BatchNorm)\n6. Backpropagation\n7. Learning rate scheduling\n8. Early stopping" },
+            dlTesting: { patterns: ["deep learning testing", "testing dl models"], response: "**Deep Learning Testing**\n\n1. Train/validation/test split\n2. Cross-validation\n3. Metrics: Accuracy, F1, IoU, mAP\n4. Overfitting detection\n5. Robustness: adversarial examples\n6. Fairness evaluation\n7. Model compression testing\n8. Drift monitoring" },
+            dlTools: { patterns: ["deep learning tools", "dl frameworks"], response: "**Deep Learning Tools**\n\n1. TensorFlow / Keras\n2. PyTorch / Lightning\n3. JAX\n4. MXNet\n5. Caffe\n6. ONNX\n7. Ray\n8. Hugging Face" },
+            
+            // ==================== WEB DEVELOPMENT, HTML, CSS, JS ====================
+            webdevDefinition: { patterns: ["what is web development", "web development definition"], response: "**Web Development**\n\nWeb development is the process of building websites and web applications. Includes frontend (UI), backend (server/database), and full-stack. Uses HTML, CSS, JavaScript, frameworks like React, Django, Node.js." },
+            htmlDefinition: { patterns: ["what is html", "html definition"], response: "**HTML - HyperText Markup Language**\n\nHTML is the standard markup language for creating web pages. Structures content using elements/tags. Works with CSS and JavaScript." },
+            cssDefinition: { patterns: ["what is css", "css definition"], response: "**CSS - Cascading Style Sheets**\n\nCSS is a stylesheet language for describing presentation of HTML documents (colors, fonts, layout, animations, responsiveness)." },
+            jsDefinition: { patterns: ["what is javascript", "js definition", "javascript language"], response: "**JavaScript (JS)**\n\nJavaScript is a high-level, interpreted programming language that makes web pages interactive. Runs in browsers and servers (Node.js). Essential for modern web apps." },
+            
+            // ==================== JOBS, COURSES, WEATHER, NEWS, HISTORY ====================
+            jobs: { patterns: ["jobs", "job opportunities", "career", "job search"], response: "**Job Search Guide**\n\nDirect links: AI/ML Engineer, Python Developer, Full Stack, Data Scientist, Entry Level, Internships. Use LinkedIn, Indeed, Naukri, Internshala." },
+            courses: { patterns: ["courses", "online courses", "learning", "certification", "study"], response: "**Learning Platforms**\n\nCoursera, edX, Udemy, DeepLearning.AI, freeCodeCamp, NPTEL, Google AI Education." },
+            weather: { patterns: ["weather", "temperature", "rain", "sunny", "forecast"], response: "**Weather Resources**\n\nWeather.com, AccuWeather, OpenWeatherMap API. For accurate live weather, please use these websites." },
+            news: { patterns: ["news", "latest news", "headlines", "current news"], response: "**Latest News Sources**\n\nGoogle News, BBC, CNN, TechCrunch, Reuters. For AI news: Towards Data Science, Analytics Vidhya." },
+            history: { patterns: ["history", "world war", "freedom fighters", "historical"], response: "**History Highlights**\n\nWorld War I (1914-1918), World War II (1939-1945). Indian freedom fighters: Gandhi, Nehru, Bose, Bhagat Singh. Tech pioneers: Ada Lovelace, Alan Turing, Guido van Rossum, Tim Berners-Lee." },
+            
+            // Difference patterns
+            aiVsMl: { patterns: ["difference between ai and ml", "ai vs ml"], response: "**AI vs ML (10 Key Points)**\n\n1. Definition: AI is broad, ML is subset\n2. Goal: AI simulates intelligence, ML learns patterns\n3. Scope: AI includes robotics/NLP, ML focused on prediction\n4. Approach: AI uses rules/logic, ML uses data/statistics\n5. Learning: AI may not learn, ML always learns\n6. Output: AI decisions/actions, ML predictions\n7. Data: AI may not need large data, ML needs large datasets\n8. Examples: AI (chess, self-driving), ML (recommendations, spam)\n9. Subfields: AI includes ML/NLP/CV, ML includes supervised/unsupervised\n10. Analogy: AI = intelligence, ML = learning from experience" },
+            mlVsDl: { patterns: ["difference between ml and deep learning", "ml vs deep learning"], response: "**ML vs Deep Learning (10 Key Points)**\n\n1. Data: ML works with smaller datasets, DL needs massive data\n2. Feature Engineering: ML manual, DL automatic\n3. Compute: ML runs on CPUs, DL requires GPUs/TPUs\n4. Training time: ML minutes/hours, DL hours/weeks\n5. Architecture: ML simple algorithms, DL multiple layers\n6. Interpretability: ML interpretable, DL black box\n7. Performance: ML good with structured data, DL excellent with unstructured\n8. Use cases: ML (credit scoring), DL (image/speech recognition)\n9. Algorithms: ML (Random Forest, SVM), DL (CNN, RNN, Transformers)\n10. Accuracy: ML 85-95%, DL 95-99%+" },
+            pythonVsCpp: { patterns: ["difference between python and c", "python vs c++"], response: "**Python vs C/C++ Differences**\n\n1. Python is interpreted, C/C++ compiled\n2. Python slower, C/C++ faster\n3. Python easier syntax, C/C++ complex syntax\n4. Python automatic memory management, C/C++ manual\n5. Python dynamically typed, C/C++ statically typed\n6. Python good for AI/ML/web, C/C++ for system programming/games\n7. Python larger community for data science, C/C++ for embedded systems\n8. Python less memory efficient, C/C++ more memory efficient\n9. Python rapid development, C/C++ more control\n10. Python GIL limits threading, C/C++ true multithreading" }
+        };
+        
+        // ==================== RESPONSE GENERATOR ====================
+        function getResponse(userMessage) {
+            const msg = userMessage.toLowerCase().trim();
+            for (const [category, data] of Object.entries(knowledgeDB)) {
+                if (data.patterns && data.patterns.length) {
+                    for (const pattern of data.patterns) {
+                        if (msg.includes(pattern) || pattern.includes(msg)) {
+                            return data.response;
+                        }
+                    }
+                }
+            }
+            return "I can help with AI (definition, founder, advantages, disadvantages, algorithms, models, features, concepts, testing, tools), ML, Generative AI, Python, Deep Learning, Web Dev, HTML, CSS, JS, jobs, courses, weather, news, and history. Ask me something specific!";
+        }
+        
+        // ==================== VOICE RECOGNITION ====================
+        let recognition = null;
+        let isRecording = false;
+        
+        function initSpeechRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                recognition.onstart = () => { isRecording = true; micBtn.classList.add('recording'); micBtn.textContent = '⏹️'; addMessage('assistant', 'Listening... Speak now.'); };
+                recognition.onresult = (event) => { userInput.value = event.results[0][0].transcript; stopRecording(); sendMessage(); };
+                recognition.onerror = () => { stopRecording(); addMessage('assistant', 'Could not recognize speech. Please allow microphone access.'); };
+                recognition.onend = () => { stopRecording(); };
+                return true;
+            } else { addMessage('assistant', 'Voice input not supported in this browser.'); return false; }
+        }
+        
+        async function startRecording() {
+            if (isRecording) { stopRecording(); return; }
+            if (!recognition && !initSpeechRecognition()) return;
+            try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); stream.getTracks().forEach(t => t.stop()); recognition.start(); setTimeout(() => { if (isRecording) stopRecording(); }, 10000); } 
+            catch (error) { addMessage('assistant', 'Microphone access denied. Please check permissions.'); }
+        }
+        function stopRecording() { if (recognition && isRecording) { try { recognition.stop(); } catch(e) {} } isRecording = false; micBtn.classList.remove('recording'); micBtn.textContent = '🎤'; }
+        
+        // ==================== CHAT UI ====================
+        let conversationHistory = [], isProcessing = false;
+        const chatContainer = document.getElementById('chatContainer'), userInput = document.getElementById('userInput'), sendBtn = document.getElementById('sendBtn'), newChatBtn = document.getElementById('newChatBtn'), shareBtn = document.getElementById('shareBtn'), micBtn = document.getElementById('micBtn');
+        
+        function addMessage(role, content) {
+            const messageDiv = document.createElement('div'); messageDiv.className = `message ${role}`;
+            const avatar = document.createElement('div'); avatar.className = 'message-avatar'; avatar.textContent = role === 'user' ? 'U' : 'Z';
+            const contentDiv = document.createElement('div'); contentDiv.className = 'message-content';
+            const textDiv = document.createElement('div'); textDiv.className = 'message-text';
+            let formatted = content.replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+            formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+            textDiv.innerHTML = formatted;
+            contentDiv.appendChild(textDiv); messageDiv.appendChild(avatar); messageDiv.appendChild(contentDiv);
+            chatContainer.appendChild(messageDiv); chatContainer.scrollTop = chatContainer.scrollHeight;
+            conversationHistory.push({ role, content, timestamp: new Date() });
+        }
+        function showTyping() { const typingDiv = document.createElement('div'); typingDiv.className = 'message assistant'; typingDiv.id = 'typingIndicator'; typingDiv.innerHTML = `<div class="message-avatar">Z</div><div class="message-content"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`; chatContainer.appendChild(typingDiv); chatContainer.scrollTop = chatContainer.scrollHeight; }
+        function removeTyping() { const ind = document.getElementById('typingIndicator'); if (ind) ind.remove(); }
+        async function sendMessage() {
+            if (isProcessing) return;
+            const message = userInput.value.trim();
+            if (!message) return;
+            addMessage('user', message); userInput.value = ''; userInput.style.height = 'auto';
+            isProcessing = true; sendBtn.disabled = true; showTyping();
+            setTimeout(() => { const response = getResponse(message); removeTyping(); addMessage('assistant', response); isProcessing = false; sendBtn.disabled = false; userInput.focus(); }, 500);
+        }
+        function newChat() { chatContainer.innerHTML = ''; conversationHistory = []; addMessage('assistant', "Hello! I'm Ziya, How can I help?"); }
+        function shareChat() {
+            const messages = []; const messageDivs = chatContainer.querySelectorAll('.message');
+            for (const msg of messageDivs) { const role = msg.classList.contains('user') ? 'user' : 'assistant'; const content = msg.querySelector('.message-text')?.innerText || ''; if (content && !content.includes('typing')) messages.push({ role, content }); }
+            const blob = new Blob([JSON.stringify({ timestamp: new Date().toISOString(), messages }, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `chat_${Date.now()}.json`; a.click(); URL.revokeObjectURL(a.href);
+            addMessage('assistant', 'Chat exported successfully!');
+        }
+        
+        sendBtn.addEventListener('click', sendMessage);
+        newChatBtn.addEventListener('click', newChat);
+        shareBtn.addEventListener('click', shareChat);
+        micBtn.addEventListener('click', startRecording);
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+        userInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = Math.min(this.scrollHeight, 200) + 'px'; });
+        
+        initSpeechRecognition();
+        newChat();
+        userInput.focus();
+    </script>
+</body>
+</html>
